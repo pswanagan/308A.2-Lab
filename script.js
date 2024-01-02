@@ -54,13 +54,15 @@ adventurer.roll();
 class Character {
     constructor (name){
         this.name = name;
-        this.health = 100;
+        this.health = Character.MAX_HEALTH;
         this.inventory = [];
     }
     roll (mod = 0) {
         const result = Math.floor(Math.random() * 20) + 1 + mod;
         console.log(`${this.name} rolled a ${result}.`)
+        return result;
         }
+        static MAX_HEALTH = 100;
 }
 
 // Recreate Robin using Character Class
@@ -87,12 +89,45 @@ robin.companion.companion.roll(); */
 class Adventurer extends Character {
     constructor(name, role) {
         super(name);
+        if (!Adventurer.ROLES.includes(role)) {
+            throw new Error(`Invalid role: ${role}. Valid roles are: ${Adventurer.ROLES.join(", ")}`);
+        }
         this.role = role;
         this.stamina = 100;
         this.skills = [];
         this.inventory.push("bedroll", "50 gold coins");
     }
+    duel(opponent) {
+        if (!(opponent instanceof Adventurer)) {
+            console.log("Invalid opponent. Must be an Adventurer.");
+            return;
+        }
 
+        console.log(`${this.name} has challenged ${opponent.name} to a duel!`);
+
+        while (this.health > 50 && opponent.health > 50) {
+            const myRoll = this.roll();
+            const opponentRoll = opponent.roll();
+
+           // let oppHealth = opponent.health;
+            //let myHealth = this.health;
+
+            if (myRoll > opponentRoll) {
+                opponent.health = opponent.health - 1;
+                console.log(`${this.name} strikes ${opponent.name}! (${myRoll} vs ${opponentRoll})`);
+            } else if (myRoll < opponentRoll) {
+                this.health = this.health - 1;
+                console.log(`${opponent.name} strikes ${this.name}! (${opponentRoll} vs ${myRoll})`);
+            } else {
+                console.log("The duelists parry each other's blows!");
+            }
+
+            console.log(`${this.name} Health: ${this.health}, ${opponent.name} Health: ${opponent.health}`);
+        }
+
+        const winner = this.health > opponent.health ? this.name : opponent.name;
+        console.log(`The winner of the duel is ${winner}!`);
+    }
     scout() {
         console.log(`${this.name} is scouting ahead...`);
         super.roll();
@@ -114,6 +149,7 @@ class Adventurer extends Character {
         this.skills.push(skill);
         console.log(`${this.name} has learned ${skill}.`);
     }
+    static ROLES = ["Fighter", "Healer", "Wizard", "Scout"];
 }
 
 
@@ -161,3 +197,40 @@ leo.assist();
 frank.follow();
 frank.assist();
 
+/**
+ * Part Four - Class Uniforms   It was completed in above in it's respective classes
+ */
+
+
+
+/**
+ * Part Five - Gather your Party
+ */
+
+class AdventurerFactory {  
+    constructor (role) {
+      this.role = role;
+      this.adventurers = [];
+    }
+    generate (name) {
+      const newAdventurer = new Adventurer(name, this.role);
+      this.adventurers.push(newAdventurer);
+    }
+    findByIndex (index) {
+      return this.adventurers[index];
+    }
+    findByName (name) {
+      return this.adventurers.find((a) => a.name === name);
+    }
+  }
+  
+  const healers = new AdventurerFactory("Healer");
+  const robin2 = healers.generate("Robin");
+
+  /**
+   * Part Six - Developing Skills
+   */
+
+const luna = new Adventurer("Luna", "Wizard");
+
+robin.duel(luna);
